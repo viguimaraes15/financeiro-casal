@@ -38,7 +38,7 @@
         .dashboard h2 { color: white; margin-top: 0; }
         .dashboard .valor-destaque { font-size: 1.5em; font-weight: bold; margin: 5px 0 15px 0; color: var(--secondary); }
         .flex-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .flex-col { flex: 1; min-width: 200px; }
+        .flex-col { flex: 1; min-width: 150px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
         input, select, button {
             width: 100%; padding: 10px; margin-bottom: 15px;
@@ -90,11 +90,15 @@
         <h2>Visão Geral do Mês</h2>
         <div class="flex-row">
             <div class="flex-col">
-                <label style="color: #ccc;">Gastos deste Mês (Soma das parcelas)</label>
-                <div class="valor-destaque" id="gastoMes">R$ 0,00</div>
+                <label style="color: #ccc;">Débito / Pix</label>
+                <div class="valor-destaque" id="gastoDebito">R$ 0,00</div>
             </div>
             <div class="flex-col">
-                <label style="color: #ccc;">Comprometido para o Futuro</label>
+                <label style="color: #ccc;">Cartão de Crédito</label>
+                <div class="valor-destaque" id="gastoCredito">R$ 0,00</div>
+            </div>
+            <div class="flex-col">
+                <label style="color: #ccc;">Comprometido Futuro</label>
                 <div class="valor-destaque" id="gastoFuturo" style="color: var(--danger);">R$ 0,00</div>
             </div>
         </div>
@@ -249,7 +253,7 @@
 
     // Expor função de deletar globalmente para o botão HTML
     window.deletarLancamento = async function(id) {
-        if (confirm("Tem a certeza que deseja excluir este lançamento?")) {
+        if (confirm("Tem certeza que deseja excluir este lançamento?")) {
             try {
                 await deleteDoc(doc(db, "lancamentos", id));
             } catch (e) {
@@ -259,7 +263,7 @@
         }
     };
 
-    // Salvar e Carregar Configurações (Sincronizado entre telemóveis)
+    // Salvar e Carregar Configurações (Sincronizado entre celulares)
     const configRef = doc(db, "configs", "geral");
     
     document.getElementById('btnSalvarConfigs').addEventListener('click', async () => {
@@ -320,7 +324,8 @@
         const tbody = document.getElementById('tabelaGastos');
         tbody.innerHTML = '';
         
-        let totalMesAtual = 0;
+        let totalMesDebito = 0;
+        let totalMesCredito = 0;
         let totalComprometidoFuturo = 0;
         const hoje = new Date();
         const mesAtual = hoje.getMonth();
@@ -337,8 +342,14 @@
             const valorParcela = data.valor / data.parcelas;
 
             if (mesesPassados >= 0 && mesesPassados < data.parcelas) {
-                totalMesAtual += valorParcela; // Parcela que cai neste mês
+                // Separa entre Débito/Pix e Crédito
+                if (data.pagamento === 'Crédito') {
+                    totalMesCredito += valorParcela;
+                } else {
+                    totalMesDebito += valorParcela;
+                }
                 
+                // Calcula o que sobra de parcelas para o futuro
                 const parcelasRestantes = data.parcelas - mesesPassados - 1;
                 if (parcelasRestantes > 0) {
                     totalComprometidoFuturo += (parcelasRestantes * valorParcela);
@@ -363,7 +374,8 @@
             `;
         });
 
-        document.getElementById('gastoMes').innerText = totalMesAtual.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('gastoDebito').innerText = totalMesDebito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('gastoCredito').innerText = totalMesCredito.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         document.getElementById('gastoFuturo').innerText = totalComprometidoFuturo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     });
 </script>
