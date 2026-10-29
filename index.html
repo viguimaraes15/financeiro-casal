@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Chaves - Rafael & Maria Vitória</title>
+    <style>
+        :root {
+            --primary: #2A9D8F;
+            --secondary: #E9C46A;
+            --danger: #E76F51;
+            --dark: #264653;
+            --light: #F4F1DE;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2 { text-align: center; color: var(--dark); }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .flex-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .flex-col { flex: 1; min-width: 200px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input, select, button {
+            width: 100%; padding: 10px; margin-bottom: 15px;
+            border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary); color: white; border: none;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background-color: #21867a; }
+        
+        /* Progress Bars */
+        .progress-container {
+            background-color: #ddd; border-radius: 20px; width: 100%;
+            height: 20px; margin-bottom: 10px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; border-radius: 20px;
+            background-color: var(--primary); width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+        .goal-text { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 15px;}
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--dark); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏠 Projeto Chaves</h1>
+    <p style="text-align: center;">Gestão Financeira: Rafael & Maria Vitória</p>
+
+    <!-- Configuração de Renda -->
+    <div class="card">
+        <h2>Renda do Casal</h2>
+        <div class="flex-row">
+            <div class="flex-col">
+                <label>Renda Maria Vitória (R$)</label>
+                <input type="number" id="rendaMaria" placeholder="Ex: 5000" oninput="calcularRenda()">
+            </div>
+            <div class="flex-col">
+                <label>Renda Rafael (R$)</label>
+                <input type="number" id="rendaRafael" placeholder="Ex: 5000" oninput="calcularRenda()">
+            </div>
+        </div>
+        <p>Renda Total: <strong>R$ <span id="rendaTotal">0.00</span></strong></p>
+        <p>Contribuição: Maria <span id="percMaria">0</span>% | Rafael <span id="percRafael">0</span>%</p>
+    </div>
+
+    <!-- Metas -->
+    <div class="card">
+        <h2>Nossas Metas</h2>
+        
+        <label>Reserva de Emergência (R$)</label>
+        <div class="flex-row">
+            <input type="number" id="metaReserva" class="flex-col" placeholder="Objetivo" value="10000" oninput="atualizarBarras()">
+            <input type="number" id="atualReserva" class="flex-col" placeholder="Já guardado" value="0" oninput="atualizarBarras()">
+        </div>
+        <div class="progress-container"><div class="progress-bar" id="barReserva"></div></div>
+        <div class="goal-text">
+            <span id="textoReserva">0%</span>
+            <span>Falta: R$ <span id="faltaReserva">10000</span></span>
+        </div>
+
+        <label>Entrada do Imóvel (R$)</label>
+        <div class="flex-row">
+            <input type="number" id="metaImovel" class="flex-col" placeholder="Objetivo" value="50000" oninput="atualizarBarras()">
+            <input type="number" id="atualImovel" class="flex-col" placeholder="Já guardado" value="0" oninput="atualizarBarras()">
+        </div>
+        <div class="progress-container"><div class="progress-bar" id="barImovel"></div></div>
+        <div class="goal-text">
+            <span id="textoImovel">0%</span>
+            <span>Falta: R$ <span id="faltaImovel">50000</span></span>
+        </div>
+    </div>
+
+    <!-- Novo Lançamento -->
+    <div class="card">
+        <h2>Novo Lançamento</h2>
+        <form id="formGasto">
+            <div class="flex-row">
+                <div class="flex-col">
+                    <label>Descrição</label>
+                    <input type="text" id="desc" required placeholder="Ex: Mercado">
+                </div>
+                <div class="flex-col">
+                    <label>Valor Total (R$)</label>
+                    <input type="number" step="0.01" id="valor" required>
+                </div>
+            </div>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <label>Categoria</label>
+                    <select id="categoria">
+                        <option>Mercado</option>
+                        <option>Moradia</option>
+                        <option>Transporte</option>
+                        <option>Lazer / Cultura</option>
+                        <option>Reserva de Emergência</option>
+                        <option>Entrada Imóvel</option>
+                        <option>Outros</option>
+                    </select>
+                </div>
+                <div class="flex-col">
+                    <label>Parcelas</label>
+                    <input type="number" id="parcelas" value="1" min="1">
+                </div>
+                <div class="flex-col">
+                    <label>Quem pagou?</label>
+                    <select id="quem">
+                        <option>Maria Vitória</option>
+                        <option>Rafael</option>
+                        <option>Conta Conjunta</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit">Salvar Lançamento</button>
+        </form>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card" style="overflow-x: auto;">
+        <h2>Últimos Lançamentos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Parcelas</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaGastos">
+                <!-- Os dados do Firebase aparecerão aqui -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Firebase SDKs (Tipo Module) -->
+<script type="module">
+    // Importando as funções do Firebase v9+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // SUAS CHAVES DO FIREBASE AQUI
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMcoYQ9Ucd6po9UBOQhKVmYlXM-FzMfUE",
+      authDomain: "financeiro---casal-568e2.firebaseapp.com",
+      projectId: "financeiro---casal-568e2",
+      storageBucket: "financeiro---casal-568e2.firebasestorage.app",
+      messagingSenderId: "494049237674",
+      appId: "1:494049237674:web:92643135099073259e0ed3",
+      measurementId: "G-KJYFNPGPRX"
+    };
+
+    // Inicializando Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Login Anônimo automático para permitir gravar no banco
+    signInAnonymously(auth).catch((error) => {
+        console.error("Erro na autenticação:", error);
+    });
+
+    // Salvar Dados no Firebase
+    document.getElementById('formGasto').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const desc = document.getElementById('desc').value;
+        const valor = parseFloat(document.getElementById('valor').value);
+        const categoria = document.getElementById('categoria').value;
+        const parcelas = parseInt(document.getElementById('parcelas').value);
+        const quem = document.getElementById('quem').value;
+
+        try {
+            await addDoc(collection(db, "lancamentos"), {
+                descricao: desc,
+                valor: valor,
+                categoria: categoria,
+                parcelas: parcelas,
+                quemPagou: quem,
+                data: new Date().toISOString()
+            });
+            document.getElementById('formGasto').reset();
+            alert("Salvo com sucesso!");
+        } catch (e) {
+            console.error("Erro ao adicionar: ", e);
+            alert("Erro ao salvar. Verifique se o Firestore está no Modo Teste.");
+        }
+    });
+
+    // Ler Dados em Tempo Real do Firebase
+    const q = query(collection(db, "lancamentos"), orderBy("data", "desc"));
+    onSnapshot(q, (snapshot) => {
+        const tbody = document.getElementById('tabelaGastos');
+        tbody.innerHTML = '';
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const dataFormatada = new Date(data.data).toLocaleDateString('pt-BR');
+            const valorFormatado = data.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            let infoParcela = data.parcelas > 1 ? `1/${data.parcelas} (${(data.valor/data.parcelas).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}/mês)` : 'À vista';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${dataFormatada}</td>
+                    <td>${data.descricao}</td>
+                    <td>${data.categoria}</td>
+                    <td>${infoParcela}</td>
+                    <td>${valorFormatado}</td>
+                </tr>
+            `;
+        });
+    });
+</script>
+
+<!-- Funções Locais de Interface -->
+<script>
+    function calcularRenda() {
+        let m = parseFloat(document.getElementById('rendaMaria').value) || 0;
+        let r = parseFloat(document.getElementById('rendaRafael').value) || 0;
+        let total = m + r;
+        document.getElementById('rendaTotal').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        
+        if(total > 0) {
+            document.getElementById('percMaria').innerText = Math.round((m/total)*100);
+            document.getElementById('percRafael').innerText = Math.round((r/total)*100);
+        }
+    }
+
+    function atualizarBarras() {
+        let metaR = parseFloat(document.getElementById('metaReserva').value) || 1;
+        let atualR = parseFloat(document.getElementById('atualReserva').value) || 0;
+        let percR = Math.min((atualR / metaR) * 100, 100).toFixed(1);
+        document.getElementById('barReserva').style.width = percR + '%';
+        document.getElementById('textoReserva').innerText = percR + '%';
+        document.getElementById('faltaReserva').innerText = Math.max(metaR - atualR, 0).toLocaleString('pt-BR');
+
+        let metaI = parseFloat(document.getElementById('metaImovel').value) || 1;
+        let atualI = parseFloat(document.getElementById('atualImovel').value) || 0;
+        let percI = Math.min((atualI / metaI) * 100, 100).toFixed(1);
+        document.getElementById('barImovel').style.width = percI + '%';
+        document.getElementById('textoImovel').innerText = percI + '%';
+        document.getElementById('faltaImovel').innerText = Math.max(metaI - atualI, 0).toLocaleString('pt-BR');
+    }
+    window.onload = atualizarBarras;
+</script>
+</body>
+</html>
